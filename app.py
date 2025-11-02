@@ -1,5 +1,4 @@
 import streamlit as st
-import math
 from collections import deque, defaultdict
 import pandas as pd
 import networkx as nx
@@ -45,40 +44,16 @@ class SocialGraph:
                     q.append(nb)
         return None
 
-    def common_neighbors(self, u, v):
-        return len(self.adj[u] & self.adj[v])
-
-    def jaccard(self, u, v):
-        A, B = self.adj[u], self.adj[v]
-        if not A and not B:
-            return 0.0
-        return len(A & B) / len(A | B)
-
-    def adamic_adar(self, u, v):
-        commons = self.adj[u] & self.adj[v]
-        score = 0.0
-        for w in commons:
-            deg = len(self.adj[w])
-            if deg > 1:
-                score += 1.0 / math.log(deg)
-        return score
-
-    def recommend_friends(self, user, method='common', k=5):
+    def recommend_friends(self, user, k=5):
+        """Simple friend recommendation based on mutual friends count"""
         scores = []
         existing = self.adj[user] | {user}
         for candidate in self.adj.keys():
             if candidate in existing:
                 continue
-            if method == 'common':
-                s = self.common_neighbors(user, candidate)
-            elif method == 'jaccard':
-                s = self.jaccard(user, candidate)
-            elif method == 'adamic_adar':
-                s = self.adamic_adar(user, candidate)
-            else:
-                continue
-            if s > 0:
-                scores.append((candidate, round(s, 3)))
+            mutual = len(self.adj[user] & self.adj[candidate])
+            if mutual > 0:
+                scores.append((candidate, mutual))
         scores.sort(key=lambda x: (-x[1], x[0]))
         return scores[:k]
 
@@ -103,12 +78,12 @@ for u,v in friendships:
 
 # ---- Streamlit UI ----
 st.set_page_config(page_title="Mini Social Network", layout="wide")
-st.title("🌐 Mini Social Network Analysis")
-st.markdown("Explore connections and friend recommendations using graph algorithms!")
+st.title("🌐 Mini Social Network")
+st.markdown("A simple interactive demo to visualize friendships, find connections, and suggest new friends!")
 
-tab1, tab2, tab3 = st.tabs(["🔗 View Network", "🚀 Shortest Path", "💡 Friend Recommendations"])
+tab1, tab2, tab3 = st.tabs(["🔗 View Network", "🚀 Shortest Path", "🤝 Friend Suggestions"])
 
-# ---- TAB 1: Visualize network ----
+# ---- TAB 1: View Network ----
 with tab1:
     st.subheader("Network Graph")
     nx_graph = nx.Graph()
@@ -142,18 +117,18 @@ with tab2:
         else:
             st.error("No connection found between these users.")
 
-# ---- TAB 3: Recommendations ----
+# ---- TAB 3: Friend Suggestions ----
 with tab3:
-    st.subheader("Friend Recommendations")
+    st.subheader("Friend Suggestions")
 
     user = st.selectbox("Select a user", sorted(G.users()))
-    method = st.radio("Choose algorithm", ["common", "jaccard", "adamic_adar"])
 
     if st.button("Recommend Friends"):
-        recs = G.recommend_friends(user, method=method, k=5)
+        recs = G.recommend_friends(user)
         if recs:
-            df = pd.DataFrame(recs, columns=["Suggested Friend", "Score"])
-            st.write(f"### Top Friend Recommendations for {user} (method: {method})")
+            df = pd.DataFrame(recs, columns=["Suggested Friend", "Mutual Friends"])
+            st.write(f"### Top Friend Recommendations for {user}")
             st.dataframe(df)
         else:
-            st.warning("No recommendations available (user may already be well connected).")
+            st.warning("No new friend recommendations available.")
+
