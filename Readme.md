@@ -1,11 +1,17 @@
 # 🌐 Mini Social Network (Streamlit App)
 
-A simple project that uses graph algorithms to:
-- Visualize a mini social network
-- Find the shortest path between users
-- Recommend new friends
+A simple Streamlit project that models a small social network using graph data structures.
 
-## Run Locally
-```bash
-pip install -r requirements.txt
-streamlit run app.py
+### Features
+- Visualize the social network graph
+- Find the shortest connection path between users
+- Suggest new friends based on mutual friends
+
+---
+
+## 🛠 Run Locally
+
+1. Clone this project or download the folder.
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
