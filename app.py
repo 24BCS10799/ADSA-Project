@@ -8,9 +8,9 @@ import matplotlib.pyplot as plt
 class SocialGraph:
     def __init__(self):
         self.adj = defaultdict(set)
-
     def add_user(self, user):
-        self.adj[user]
+        if user not in self.adj:
+            self.adj[user] = set()
 
     def add_friendship(self, u, v):
         if u != v:
@@ -131,4 +131,5 @@ with tab3:
             st.dataframe(df)
         else:
             st.warning("No new friend recommendations available.")
+
 
